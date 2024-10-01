@@ -7,36 +7,37 @@ import com.example.lab08.modelo.Task
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
-class TaskViewModel(private val dao: TaskDao) : ViewModel() {
-    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
-    val tasks: StateFlow<List<Task>> = _tasks
 
-    init {
-        viewModelScope.launch {
-            _tasks.value = dao.getAllTasks()
-        }
-    }
+
+
+class TaskViewModel(private val taskDao: TaskDao) : ViewModel() {
+    val tasks: Flow<List<Task>> = taskDao.getAllTasks()
 
     fun addTask(description: String) {
         viewModelScope.launch {
-            dao.insertTask(Task(description = description))
-            _tasks.value = dao.getAllTasks()
+            taskDao.insertTask(Task(description = description))
         }
     }
 
-    fun toggleTaskCompletion(task: Task) {
+    fun updateTask(task: Task) {
         viewModelScope.launch {
-            val updatedTask = task.copy(isCompleted = !task.isCompleted)
-            dao.updateTask(updatedTask)
-            _tasks.value = dao.getAllTasks()
+            taskDao.updateTask(task)
+        }
+    }
+
+    fun deleteTask(task: Task) {
+        viewModelScope.launch {
+            taskDao.deleteTask(task)
         }
     }
 
     fun deleteAllTasks() {
         viewModelScope.launch {
-            dao.deleteAllTasks()
-            _tasks.value = emptyList()
+            taskDao.deleteAllTasks()
         }
     }
 }
